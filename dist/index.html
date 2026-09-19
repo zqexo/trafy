@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1a1a2e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="Приложение учёта трат — быстрый вход, быстрая запись, статистика">
+<title>Траты — учёт расходов</title>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Phosphor Icons CDN -->
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1/src/phosphor-icons.js" defer></script>
+
+<!-- Chart.js for statistics -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
+
+<!-- App CSS -->
+<link rel="stylesheet" href="style.css">
+
+<!-- PWA Manifest -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1a1a2e">
+</head>
+<body>
+
+<!-- ============================================================
+     НАВИГАЦИЯ / ШАПКА
+     ============================================================ -->
+<header class="app-header" role="banner">
+  <button class="btn-back" id="btn-back" aria-label="Назад" title="Назад">
+    <i class="ph ph-caret-left" aria-hidden="true"></i>
+  </button>
+  <div class="header-center">
+    <h1 class="header-title" id="header-title">Траты</h1>
+  </div>
+  <div class="header-right">
+    <button class="btn-icon" id="btn-theme" aria-label="Переключить тему" title="Тема">
+      <i class="ph ph-moon" id="theme-icon" aria-hidden="true"></i>
+    </button>
+  </div>
+</header>
+
+<!-- ============================================================
+     ОСНОВНОЙ МНОГОСТРАНИЧНЫЙ МАКЕТ
+     ============================================================ -->
+<main class="app-main" id="app-main">
+
+  <!-- ────────────────────────────────────────────────────────────
+       ЭКРАН 1: ВХОД / ВЫБОР ПОЛЬЗОВАТЕЛЯ  (#login)
+       ──────────────────────────────────────────────────────────── -->
+  <section class="screen screen-login" id="screen-login" data-screen="login" role="main" aria-label="Вход">
+    <div class="screen-inner">
+
+      <div class="login-brand">
+        <div class="login-logo" aria-hidden="true">
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="48" height="48" rx="14" fill="var(--color-primary)"./>
+            <path d="M14 34V18C14 16.5 15.3 15.2 17 15.2H31C32.7 15.2 34 16.5 34 18V34C34 35.5 32.7 36.8 31 36.8H17C15.3 36.8 14 35.5 14 34Z" fill="var(--color-primary-light)"/>
+            <rect x="20" y="21" width="8" height="6" rx="2" fill="var(--color-surface)"/>
+            <path d="M10 38C10 39.1 10.9 40 12 40H36C37.1 40 38 39.1 38 38V38C38 39.1 37.1 40 36 40H12C10.9 40 10 39.1 10 38V38Z" fill="var(--color-primary-light)"/>
+            <circle cx="24" cy="18" r="4" fill="var(--color-primary)"/>
+          </svg>
+        </div>
+        <h2 class="login-brand-title">Кто сегодня?</h2>
+        <p class="login-brand-sub">Выберите пользователя для входа</p>
+      </div>
+
+      <!-- Список пользователей -->
+      <div class="user-list" id="user-list" role="listbox" aria-label="Выберите пользователя">
+        <!-- заполняется JS -->
+      </div>
+
+      <!-- Форма входа (если пользователь выбран) -->
+      <div class="login-form hidden" id="login-form">
+        <div class="form-group">
+          <label for="input-email" class="form-label">Email</label>
+          <input type="email" id="input-email" class="input" placeholder="you@example.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="input-password" class="form-label">Пароль</label>
+          <div class="input-with-toggle">
+            <input type="password" id="input-password" class="input" placeholder="••••••••" autocomplete="current-password">
+            <button class="btn-visible-pass" id="btn-visibility" type="button" aria-label="Показать пароль">
+              <i class="ph ph-eye" id="eye-icon"></i>
+            </button>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-block" id="btn-login-submit">Войти</button>
+        <p class="login-error hidden" id="login-error" role="alert"></p>
+        <button class="btn-link" id="btn-forgot">Забыли пароль?</button>
+      </div>
+
+      <!-- Регистрация -->
+      <div class="login-register hidden" id="login-register">
+        <h3 class="login-register-title">Создать аккаунт</h3>
+        <div class="form-group">
+          <label for="input-register-name" class="form-label">Имя</label>
+          <input type="text" id="input-register-name" class="input" placeholder="Александр" autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label for="input-register-email" class="form-label">Email</label>
+          <input type="email" id="input-register-email" class="input" placeholder="you@example.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="input-register-pass" class="form-label">Пароль</label>
+          <input type="password" id="input-register-pass" class="input" placeholder="Минимум 6 символов" autocomplete="new-password">
+        </div>
+        <button class="btn btn-primary btn-block" id="btn-register">Зарегистрироваться</button>
+        <p class="login-error hidden" id="register-error" role="alert"></p>
+      </div>
+
+      <p class="login-footer">Установите приложение на главный экран →</p>
+    </div>
+  </section>
+
+  <!-- ────────────────────────────────────────────────────────────
+       ЭКРАН 2: ГЛАВНЫЙ (быстрое добавление + последние траты)  (#main)
+       ──────────────────────────────────────────────────────────── -->
+  <section class="screen screen-main" id="screen-main" data-screen="main" role="main" aria-label="Главный экран" hidden>
+    <div class="screen-inner">
+
+      <!-- Карточки быстрых сумм -->
+      <div class="stats-row" id="stats-row">
+        <div class="stat-card stat-today">
+          <span class="stat-label">Сегодня</span>
+          <span class="stat-value" id="stat-today">—</span>
+          <span class="stat-sub" id="stat-today-sub"></span>
+        </div>
+        <div class="stat-card stat-week">
+          <span class="stat-label">Неделя</span>
+          <span class="stat-value" id="stat-week">—</span>
+        </div>
+        <div class="stat-card stat-month">
+          <span class="stat-label">Этот месяц</span>
+          <span class="stat-value" id="stat-month">—</span>
+        </div>
+      </div>
+
+      <!-- Быстрое добавление траты -->
+      <div class="quick-add-card" id="quick-add-card">
+        <div class="quick-add-header">
+          <h2 class="quick-add-title">Быстрое добавление</h2>
+          <span class="quick-add-badge" id="quick-add-currency">₽</span>
+        </div>
+        <div class="quick-add-body">
+          <div class="input-large-group">
+            <label for="quick-amount" class="input-large-label">Сумма</label>
+            <div class="input-large-wrap">
+              <span class="input-large-prefix">₽</span>
+              <input type="number" id="quick-amount" class="input-large" placeholder="0" min="0.01" step="0.01" inputmode="decimal" autocomplete="off">
+            </div>
+          </div>
+          <div class="quick-add-row">
+            <div class="form-group flex-1">
+              <label for="quick-category" class="form-label">Категория</label>
+              <select id="quick-category" class="input-select"></select>
+            </div>
+            <div class="form-group">
+              <label for="quick-date" class="form-label">Дата</label>
+              <input type="date" id="quick-date" class="input" value="">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="quick-description" class="form-label">Описание (необязательно)</label>
+            <input type="text" id="quick-description" class="input" placeholder="Что купили?" autocomplete="off">
+          </div>
+          <button class="btn btn-primary btn-block" id="btn-quick-add">
+            <i class="ph ph-plus" aria-hidden="true"></i>
+            Добавить трату
+          </button>
+        </div>
+      </div>
+
+      <!-- Последние траты -->
+      <div class="recent-section">
+        <div class="recent-header">
+          <h2 class="recent-title">Последние траты</h2>
+          <a href="#list" class="btn-text-link" id="btn-see-all">Все траты →</a>
+        </div>
+        <div class="empty-state" id="recent-empty">
+          <div class="empty-icon">
+            <i class="ph ph-wallet" aria-hidden="true"></i>
+          </div>
+          <p class="empty-title">Пока нет трат</p>
+          <p class="empty-sub">Добавьте первую трату на главном экране</p>
+        </div>
+        <div class="expense-list" id="recent-list" hidden>
+          <!-- заполняется JS -->
+        </div>
+        <div class="section-footer" id="recent-footer">
+          <span class="section-total">Итого: <strong id="recent-total">—</strong></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ────────────────────────────────────────────────────────────
+       ЭКРАН 3: СПИСОК ТРАТ  (#list)
+       ──────────────────────────────────────────────────────────── -->
+  <section class="screen screen-list" id="screen-list" data-screen="list" role="main" aria-label="Список трат" hidden>
+    <div class="screen-inner">
+
+      <!-- Фильтры -->
+      <div class="list-filters" id="list-filters">
+        <div class="filter-chip-group" id="filter-period" role="group" aria-label="Период">
+          <button class="chip chip-active" data-filter="period" data-value="all">Все</button>
+          <button class="chip" data-filter="period" data-value="today">Сегодня</button>
+          <button class="chip" data-filter="period" data-value="week">Неделя</button>
+          <button class="chip" data-filter="period" data-value="month">Месяц</button>
+        </div>
+        <div class="flex gap-sm">
+          <select id="filter-user" class="input-select chip-select" aria-label="Пользователь">
+            <option value="all">Все пользователи</option>
+          </select>
+          <select id="filter-category" class="input-select chip-select" aria-label="Категория">
+            <option value="all">Все категории</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Список -->
+      <div class="expense-list" id="list-full-list">
+        <!-- заполняется JS -->
+      </div>
+
+      <div class="empty-state" id="list-empty">
+        <div class="empty-icon"><i class="ph ph-receipt" aria-hidden="true"></i></div>
+        <p class="empty-title">Трат не найдено</p>
+        <p class="empty-sub" id="list-empty-sub">Попробуйте изменить фильтры</p>
+      </div>
+
+      <div class="list-footer">
+        <span class="section-total">Итого: <strong id="list-total">—</strong></span>
+        <span class="section-count" id="list-count">0 записей</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ────────────────────────────────────────────────────────────
+       ЭКРАН 4: ДОБАВИТЬ / РЕДАКТИРОВАТЬ ТРАТУ  (#add, #edit)
+       ──────────────────────────────────────────────────────────── -->
+  <section class="screen screen-form" id="screen-form" data-screen="form" role="main" aria-label="Добавить или редактировать" hidden>
+    <div class="screen-inner form-screen">
+
+      <div class="form-top-row">
+        <h2 class="form-title" id="form-title">Добавить трату</h2>
+        <span class="form-type-badge" id="form-type-badge"></span>
+      </div>
+
+      <form id="expense-form" novalidate>
+        <input type="hidden" id="form-id">
+
+        <div class="form-group">
+          <label for="form-amount" class="form-label">Сумма <span class="form-required" aria-label="обязательно">*</span></label>
+          <div class="input-amount-wrap">
+            <span class="input-amount-prefix" id="form-currency-prefix">₽</span>
+            <input
+              type="number"
+              id="form-amount"
+              class="input input-amount"
+              placeholder="0.00"
+              min="0.01"
+              step="0.01"
+              inputmode="decimal"
+              required
+              autocomplete="off"
+            >
+          </div>
+          <p class="form-hint" id="form-amount-hint">Выберите валюту в настройках для смены</p>
+        </div>
+
+        <div class="form-group">
+          <label for="form-category" class="form-label">Категория <span class="form-required" aria-label="обязательно">*</span></label>
+          <select id="form-category" class="input-select" required></select>
+        </div>
+
+        <div class="form-group">
+          <label for="form-description" class="form-label">Описание</label>
+          <textarea
+            id="form-description"
+            class="input textarea"
+            rows="3"
+            placeholder="Что купили? Где?"
+            maxlength="200"
+            autocomplete="off"
+          ></textarea>
+          <span class="form-char-count" id="form-char-count">0/200</span>
+        </div>
+
+        <div class="form-group">
+          <label for="form-date" class="form-label">Дата <span class="form-required" aria-label="обязательно">*</span></label>
+          <input type="date" id="form-date" class="input" required>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-ghost btn-block" id="btn-form-cancel">Отмена</button>
+          <button type="submit" class="btn btn-primary btn-block" id="btn-form-save">
+            <i class="ph ph-plus" id="form-save-icon" aria-hidden="true"></i>
+            <span id="form-save-text">Добавить</span>
+          </button>
+        </div>
+
+        <p class="form-error hidden" id="form-error" role="alert"></p>
+      </form>
+    </div>
+  </section>
+
+  <!-- ────────────────────────────────────────────────────────────
+       ЭКРАН 5: СТАТИСТИКА  (#stats)
+       ──────────────────────────────────────────────────────────── -->
+  <section class="screen screen-stats" id="screen-stats" data-screen="stats" role="main" aria-label="Статистика" hidden>
+    <div class="screen-inner">
+
+      <div class="stats-overview-row">
+        <div class="stats-overview-card">
+          <span class="stats-overview-label">Сегодня</span>
+          <span class="stats-overview-value" id="stats-today">—</span>
+        </div>
+        <div class="stats-overview-card">
+          <span class="stats-overview-label">Неделя</span>
+          <span class="stats-overview-value" id="stats-week">—</span>
+        </div>
+        <div class="stats-overview-card">
+          <span class="stats-overview-label">Месяц</span>
+          <span class="stats-overview-value" id="stats-month">—</span>
+        </div>
+        <div class="stats-overview-card stats-overview-card-total">
+          <span class="stats-overview-label">Всего</span>
+          <span class="stats-overview-value" id="stats-all">—</span>
+        </div>
+      </div>
+
+      <!-- График по категориям (Chart.js doughnut) -->
+      <div class="stats-card">
+        <h2 class="stats-card-title">По категориям</h2>
+        <div class="chart-doughnut-wrap" id="chart-doughnut-wrap">
+          <canvas id="chart-categories"></canvas>
+          <div class="empty-state small" id="stats-cat-empty">
+            <p class="empty-sub">Нет данных для отображения</p>
+          </div>
+        </div>
+        <div class="category-breakdown" id="category-breakdown">
+          <!-- заполняется JS -->
+        </div>
+      </div>
+
+      <!-- График динамики (Chart.js bar) -->
+      <div class="stats-card">
+        <div class="stats-card-header">
+          <h2 class="stats-card-title">Динамика</h2>
+          <div class="period-pills">
+            <button class="pill pill-active" data-stat-period="7d">7 дней</button>
+            <button class="pill" data-stat-period="14d">14 дней</button>
+            <button class="pill" data-stat-period="30d">30 дней</button>
+          </div>
+        </div>
+        <div class="chart-bar-wrap" id="chart-bar-wrap">
+          <canvas id="chart-trend"></canvas>
+          <div class="empty-state small" id="stats-trend-empty">
+            <p class="empty-sub">Нет данных за выбранный период</p>
+          </div>
+        </div>
+        <div class="trend-legend" id="trend-legend"></div>
+      </div>
+
+      <!-- Top траты сегодня -->
+      <div class="stats-card">
+        <h2 class="stats-card-title">Топ по сумме за день</h2>
+        <div class="top-expenses" id="top-expenses">
+          <div class="empty-state small" id="stats-top-empty">
+            <p class="empty-sub">Нет трат за сегодня</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ────────────────────────────────────────────────────────────
+       ЭКРАН 6: КАТЕГОРИИ  (#categories)
+       ──────────────────────────────────────────────────────────── -->
+  <section class="screen screen-categories" id="screen-categories" data-screen="categories" role="main" aria-label="Категории" hidden>
+    <div class="screen-inner">
+
+      <div class="categories-header">
+        <h2 class="categories-title">Категории</h2>
+        <button class="btn btn-icon-sm btn-primary" id="btn-category-add" aria-label="Добавить категорию">
+          <i class="ph ph-plus" aria-hidden="true"></i>
+        </button>
+      </div>
+
+      <div class="categories-grid" id="categories-grid">
+        <!-- заполняется JS -->
+      </div>
+
+      <div class="empty-state" id="categories-empty">
+        <div class="empty-icon"><i class="ph ph-folder-open" aria-hidden="true"></i></div>
+        <p class="empty-title">Категории не созданы</p>
+        <p class="empty-sub">Добавьте первую категорию — траты без категории не учитываются</p>
+        <button class="btn btn-primary" id="btn-first-category">Создать категорию</button>
+      </div>
+
+      <div class="category-default-note" id="category-default-note">
+        <i class="ph ph-info" aria-hidden="true"></i>
+        <span>По умолчанию: <strong>Без категории</strong> — будет автоматически, если не выбрать при добавлении.</span>
+      </div>
+    </div>
+
+    <!-- Модалка добавления/редактирования категории -->
+    <div class="modal-overlay hidden" id="modal-category" role="dialog" aria-modal="true" aria-labelledby="category-modal-title">
+      <div class="modal" role="document">
+        <div class="modal-header">
+          <h3 class="modal-title" id="category-modal-title">Новая категория</h3>
+          <button class="btn-close" id="category-modal-close" aria-label="Закрыть">
+            <i class="ph ph-x" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="cat-name-input" class="form-label">Название</label>
+            <input type="text" id="cat-name-input" class="input" placeholder="Например: Еда, Транспорт..." maxlength="40" autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label for="cat-color-input" class="form-label">Цвет</label>
+            <div class="color-picker-row">
+              <input type="color" id="cat-color-input" class="color-picker" value="#3B82F6">
+              <div class="color-presets" id="color-presets">
+                <!-- заполняется JS -->
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="cat-icon-input" class="form-label">Значок (эмодзи)</label>
+            <select id="cat-icon-input" class="input-select">
+              <option value="🍽">🍽 Еда</option>
+              <option value="🚗">🚗 Транспорт</option>
+              <option value="🎮">🎮 Развлечения</option>
+              <option value="🛒">🛒 Магазин</option>
+              <option value="☕">☕ Кофе</option>
+              <option value="💊">💊 Медицина</option>
+              <option value="🏠">🏠 Дом</option>
+              <option value="✈️">✈️ Путешествия</option>
+              <option value="💼">💼 Работа</option>
+              <option value="🎁">🎁 Подарки</option>
+              <option value="🏦">🏦 Кредиты</option>
+              <option value="📱">📱 Коммуналка</option>
+              <option value="💳">💳 Кредитка</option>
+            </select>
+          </div>
+          <p class="form-error hidden" id="cat-modal-error" role="alert"></p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" id="cat-modal-cancel">Отмена</button>
+          <button class="btn btn-primary" id="cat-modal-save">Сохранить</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ────────────────────────────────────────────────────────────
+       ЭКРАН 7: НАСТРОЙКИ  (#settings)
+       ──────────────────────────────────────────────────────────── -->
+  <section class="screen screen-settings" id="screen-settings" data-screen="settings" role="main" aria-label="Настройки" hidden>
+    <div class="screen-inner">
+
+      <h2 class="settings-title">Настройки</h2>
+
+      <!-- Профиль -->
+      <div class="settings-group">
+        <h3 class="settings-group-title">
+          <i class="ph ph-user" aria-hidden="true"></i>
+          Профиль
+        </h3>
+        <div class="settings-row">
+          <div class="settings-avatar-cell">
+            <div class="settings-avatar" id="settings-avatar">
+              <i class="ph ph-user" aria-hidden="true"></i>
+            </div>
+          </div>
+          <div class="settings-info">
+            <p class="settings-display-name" id="settings-display-name">—</p>
+            <p class="settings-email" id="settings-email">—</p>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="settings-name-input" class="form-label">Имя (отображаемое)</label>
+          <input type="text" id="settings-name-input" class="input" maxlength="40" autocomplete="off">
+          <button class="btn btn-ghost btn-sm" id="settings-name-save">Сохранить</button>
+        </div>
+      </div>
+
+      <!-- Тема -->
+      <div class="settings-group">
+        <h3 class="settings-group-title">
+          <i class="ph ph-palette" aria-hidden="true"></i>
+          Тема
+        </h3>
+        <div class="theme-options" id="theme-options">
+          <button class="theme-option" data-theme="light">
+            <span class="theme-option-dot theme-light" aria-hidden="true"></span>
+            <span class="theme-option-label">Светлая</span>
+          </button>
+          <button class="theme-option" data-theme="dark">
+            <span class="theme-option-dot theme-dark" aria-hidden="true"></span>
+            <span class="theme-option-label">Тёмная</span>
+          </button>
+          <button class="theme-option theme-option-active" data-theme="auto">
+            <span class="theme-option-dot theme-auto" aria-hidden="true"></span>
+            <span class="theme-option-label">Система</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Текущая валюта -->
+      <div class="settings-group">
+        <h3 class="settings-group-title">
+          <i class="ph ph-currency-circle-dollar" aria-hidden="true"></i>
+          Валюта
+        </h3>
+        <div class="form-group">
+          <label for="settings-currency" class="form-label">Основная валюта</label>
+          <select id="settings-currency" class="input-select">
+            <option value="₽">₽ Рубль (RUB)</option>
+            <option value="$">$ Доллар (USD)</option>
+            <option value="€">€ Евро (EUR)</option>
+            <option value="₽">₽ Рубль</option>
+            <option value="₸">₸ Тенге (KZT)</option>
+            <option value="₴">₴ Гривна (UAH)</option>
+            <option value="₽">₽ Рубль</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Синхронизация -->
+      <div class="settings-group">
+        <h3 class="settings-group-title">
+          <i class="ph ph-cloud-arrow-up" aria-hidden="true"></i>
+          Синхронизация
+        </h3>
+        <div class="settings-async">
+          <div class="sync-status" id="sync-status">
+            <span class="sync-status-dot" id="sync-dot"></span>
+            <span class="sync-status-text" id="sync-text">Не синхронизировано</span>
+          </div>
+          <div class="sync-meta" id="sync-meta">
+            <span>Последняя синхронизация: <strong id="sync-last">—</strong></span>
+          </div>
+          <div class="sync-actions">
+            <button class="btn btn-ghost btn-sm" id="btn-sync-now">Синхронизировать сейчас</button>
+            <button class="btn btn-ghost btn-sm sync-disabled" id="btn-sync-toggle">Отключить</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Экспорт / Импорт -->
+      <div class="settings-group">
+        <h3 class="settings-group-title">
+          <i class="ph ph-download-simple" aria-hidden="true"></i>
+          Данные
+        </h3>
+        <div class="settings-data-actions">
+          <button class="btn btn-block btn-ghost" id="btn-export">
+            <i class="ph ph-download-simple" aria-hidden="true"></i>
+            Экспорт в JSON
+          </button>
+          <button class="btn btn-block btn-ghost" id="btn-import-trigger">
+            <i class="ph ph-upload-simple" aria-hidden="true"></i>
+            Импорт из JSON
+          </button>
+          <input type="file" id="input-import" class="hidden" accept=".json">
+          <p class="settings-data-hint">Резервная копия включает все траты и категории.</p>
+        </div>
+      </div>
+
+      <!-- О приложении -->
+      <div class="settings-group">
+        <h3 class="settings-group-title">
+          <i class="ph ph-information" aria-hidden="true"></i>
+          О приложении
+        </h3>
+        <p class="settings-about-text">Траты v1.0 · Vanilla JS + IndexedDB<br>Учёт расходов для двух пользователей</p>
+        <div class="settings-version">Build 2026.09</div>
+      </div>
+
+      <!-- Выход -->
+      <div class="settings-group settings-group-danger">
+        <button class="btn btn-danger btn-block" id="btn-logout">
+          <i class="ph ph-sign-out" aria-hidden="true"></i>
+          Выйти из аккаунта
+        </button>
+        <p class="settings-danger-note hidden" id="logout-note">Вы должны быть в сети для выхода.</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============================================================
+     БОТОМ-НАВИГАЦИЯ (Tab Bar)
+     ============================================================ -->
+<nav class="bottom-nav" id="bottom-nav" role="navigation" aria-label="Основная навигация">
+  <a href="#main" class="nav-item nav-item-active" data-nav="main" aria-current="page">
+    <i class="ph ph-house" aria-hidden="true"></i>
+    <span>Главная</span>
+  </a>
+  <a href="#list" class="nav-item" data-nav="list">
+    <i class="ph ph-list-bullets" aria-hidden="true"></i>
+    <span>Траты</span>
+    <span class="nav-badge" id="nav-badge" hidden></span>
+  </a>
+  <a href="#stats" class="nav-item" data-nav="stats">
+    <i class="ph ph-chart-bar" aria-hidden="true"></i>
+    <span>Статистика</span>
+  </a>
+  <a href="#categories" class="nav-item" data-nav="categories">
+    <i class="ph ph-folder" aria-hidden="true"></i>
+    <span>Категории</span>
+  </a>
+  <a href="#settings" class="nav-item" data-nav="settings">
+    <i class="ph ph-gear" aria-hidden="true"></i>
+    <span>Настройки</span>
+  </a>
+</nav>
+
+<!-- Индикатор синхронизации (тост) -->
+<div class="sync-toast hidden" id="sync-toast" role="status" aria-live="polite">
+  <i class="ph ph-cloud-check" id="sync-toast-icon" aria-hidden="true"></i>
+  <span id="sync-toast-text">Синхронизация завершена</span>
+</div>
+
+<!-- ============================================================
+     МОДАЛКА УДАЛЕНИЯ ТРАТЫ
+     ============================================================ -->
+<div class="modal-overlay hidden" id="modal-delete" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title">
+  <div class="modal modal-sm" role="document">
+    <div class="modal-header">
+      <h3 class="modal-title" id="delete-modal-title">Удалить трату?</h3>
+      <button class="btn-close" id="delete-modal-close" aria-label="Закрыть">
+        <i class="ph ph-x" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p id="delete-modal-desc">Эта трата будет permanently удалена из списка.</p>
+      <div class="delete-expense-preview" id="delete-preview"></div>
+      <p class="form-error hidden" id="delete-error" role="alert"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="delete-modal-cancel">Отмена</button>
+      <button class="btn btn-danger" id="delete-modal-confirm">Удалить</button>
+    </div>
+  </div>
+</div>
+
+<!-- МОДАЛКА РЕДАКТИРОВАНИЯ КАТЕГОРИИ (реиспользуем category modal) -->
+<!-- id="modal-category" используется и для редактирования -->
+
+<!-- ============================================================
+    APP JS — сначала data-layer (ES module), затем бэкенд-адаптер,
+    затем каркас приложения
+    ============================================================ -->
+<script type="module" src="js/data-layer.js"></script>
+<script type="module" src="js/integration.js"></script>
+<script defer src="app.js"></script>
+</body>
+</html>
