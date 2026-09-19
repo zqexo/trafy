@@ -106,6 +106,12 @@ try {
   });
   console.log('[integration] Данные очищены');
 
+  // Очистить localStorage
+  localStorage.removeItem('trafy-state');
+  localStorage.removeItem('et_mock_users');
+  localStorage.removeItem('trafy-currentUser');
+  console.log('[integration] localStorage очищен');
+
   const existingCats = await DL.getCategories();
   if (existingCats.length === 0 && seedUser) {
     for (const cat of SEED_CATEGORIES) {
