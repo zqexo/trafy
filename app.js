@@ -49,18 +49,7 @@ let categories = [];
 let expenses  = [];
 
 // Демо-траты для полноты прототипа
-const DEMO_EXPENSES = [
-  { id: 'exp-1', userId: 'user-1', categoryId: 'cat-1', amount: 350,    description: 'Суши и кофе',        date: todayStr(-0), currency: '₽' },
-  { id: 'exp-2', userId: 'user-1', categoryId: 'cat-5', amount: 120,    description: 'Латте в офисе',       date: todayStr(-0), currency: '₽' },
-  { id: 'exp-3', userId: 'user-1', categoryId: 'cat-4', amount: 2500,   description: 'Продукты на неделю',   date: todayStr(-1), currency: '₽' },
-  { id: 'exp-4', userId: 'user-1', categoryId: 'cat-2', amount: 500,    description: 'Бензин',               date: todayStr(-2), currency: '₽' },
-  { id: 'exp-5', userId: 'user-1', categoryId: 'cat-3', amount: 890,    description: 'Netflix + игра',        date: todayStr(-3), currency: '₽' },
-  { id: 'exp-6', userId: 'user-1', categoryId: 'cat-1', amount: 1850,   description: 'Ужин в ресторане',     date: todayStr(-4), currency: '₽' },
-  { id: 'exp-7', userId: 'user-2', categoryId: 'cat-1', amount: 420,    description: 'Сытный завтрак',       date: todayStr(-0), currency: '₽' },
-  { id: 'exp-8', userId: 'user-2', categoryId: 'cat-6', amount: 300,    description: 'Витамины',             date: todayStr(-1), currency: '₽' },
-  { id: 'exp-9', userId: 'user-2', categoryId: 'cat-9', amount: 1500,   description: 'Проезд на работу',     date: todayStr(-2), currency: '₽' },
-  { id: 'exp-10', userId: 'user-1', categoryId: 'cat-7', amount: 2100,  description: 'Свет и вода',          date: todayStr(-5), currency: '₽' },
-];
+
 
 function todayStr(offsetDays = 0) {
   const d = new Date();
@@ -70,7 +59,7 @@ function todayStr(offsetDays = 0) {
 
 function initData() {
   categories = DEFAULT_CATEGORIES.map(c => ({ ...c }));
-  expenses   = DEMO_EXPENSES.map(e => ({ ...e }));
+  expenses   = [];
 }
 
 /* ────────────────────────────────────────────────────────────────

@@ -38,21 +38,7 @@ const SEED_CATEGORIES = [
   { name: 'Подарки',       color: '#f97316', icon: '🎁' },
 ];
 
-const SEED_EXPENSES = [
-  { userId: 'user-1', amount: 350,   description: 'Суши и кофе',        date: _today(0),  currency: '₽' },
-  { userId: 'user-1', amount: 120,   description: 'Латте в офисе',       date: _today(0),  currency: '₽' },
-  { userId: 'user-1', amount: 2500,  description: 'Продукты на неделю',   date: _today(-1), currency: '₽' },
-  { userId: 'user-1', amount: 500,   description: 'Бензин',               date: _today(-2), currency: '₽' },
-  { userId: 'user-1', amount: 890,   description: 'Netflix + игра',        date: _today(-3), currency: '₽' },
-  { userId: 'user-1', amount: 1850,  description: 'Ужин в ресторане',     date: _today(-4), currency: '₽' },
-  { userId: 'user-2', amount: 420,   description: 'Сытный завтрак',       date: _today(0),  currency: '₽' },
-  { userId: 'user-2', amount: 300,   description: 'Витамины',             date: _today(-1), currency: '₽' },
-  { userId: 'user-2', amount: 1500,  description: 'Проезд на работу',     date: _today(-2), currency: '₽' },
-  { userId: 'user-1', amount: 2100,  description: 'Свет и вода',          date: _today(-5), currency: '₽' },
-];
 
-// Маппинг индекса траты → индекса категории
-const EXPENSE_CATEGORY_MAP = [0, 4, 3, 1, 2, 0, 0, 5, 8, 6];
 
 function _today(offset) {
   const d = new Date();
@@ -106,6 +92,20 @@ if (!seedUser) {
 
 // Засеять категории
 try {
+  // Очистить все данные перед заселением
+  await new Promise((resolve) => {
+    const request = indexedDB.open('expense-tracker-db', 2);
+    request.onsuccess = (e) => {
+      const db = e.target.result;
+      const tx = db.transaction(['expenses', 'categories'], 'readwrite');
+      tx.objectStore('expenses').clear();
+      tx.objectStore('categories').clear();
+      tx.oncomplete = () => { db.close(); resolve(); };
+      db.close();
+    };
+  });
+  console.log('[integration] Данные очищены');
+
   const existingCats = await DL.getCategories();
   if (existingCats.length === 0 && seedUser) {
     for (const cat of SEED_CATEGORIES) {
@@ -117,26 +117,7 @@ try {
   console.error('[integration] Категории не засеяны:', e);
 }
 
-// Засеять траты
-try {
-  const existingExpenses = await DL.getExpenses();
-  if (existingExpenses.length === 0 && seedUser) {
-    const cats = await DL.getCategories();
-    const catMap = {};
-    cats.forEach(c => { catMap[c.name] = c.id; });
-
-    for (const [idx, exp] of SEED_EXPENSES.entries()) {
-      const catName = SEED_CATEGORIES[EXPENSE_CATEGORY_MAP[idx]]?.name;
-      await DL.addExpense({
-        ...exp,
-        categoryId: catMap[catName]?.id || cats[0]?.id,
-      });
-    }
-    console.log('[integration] Засеяны', SEED_EXPENSES.length, 'тратов');
-  }
-} catch (e) {
-  console.error('[integration] Траты не засеяны:', e);
-}
+// Засеять траты (пусто — траты добавляются пользователем)
 
 // Сохранить текущего пользователя для app.js
 const currentUser = DL.getCurrentUser();
