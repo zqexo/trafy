@@ -2266,6 +2266,13 @@ function wireEvents() {
     }
   });
 
+  // ── Экран входа (привязка один раз при инициализации) ──
+  $('#btn-login-submit')?.addEventListener('click', handleLoginSubmit);
+  $('#btn-register')?.addEventListener('click', handleRegister);
+  $('#btn-forgot')?.addEventListener('click', () => {
+    showToast('Восстановление пароля через Email — в продакшене 🔐');
+  });
+
   // ── Онлайн/офлайн ──
   window.addEventListener('online',  () => {
     if (appState.syncEnabled) {
@@ -2330,6 +2337,7 @@ async function init() {
           email: email,
           displayName: data.displayName,
           color: '#6366f1',
+          password: data.password,
         }));
       }
     } catch (e) {

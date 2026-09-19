@@ -66,7 +66,11 @@ function _today(offset) {
    ──────────────────────────────────────────────────────────────── */
 
 const DL = await import('./data-layer.js');
-await DL.initFirebase();
+try {
+  await DL.initFirebase();
+} catch (e) {
+  console.error('[integration] initFirebase failed:', e);
+}
 
 // Засеять пользователей
 const storedUsers = JSON.parse(localStorage.getItem('et_mock_users') || '{}');
@@ -101,29 +105,37 @@ if (!seedUser) {
 }
 
 // Засеять категории
-const existingCats = await DL.getCategories();
-if (existingCats.length === 0 && seedUser) {
-  for (const cat of SEED_CATEGORIES) {
-    await DL.addCategory(cat);
+try {
+  const existingCats = await DL.getCategories();
+  if (existingCats.length === 0 && seedUser) {
+    for (const cat of SEED_CATEGORIES) {
+      await DL.addCategory(cat);
+    }
+    console.log('[integration] Засеяны', SEED_CATEGORIES.length, 'категорий');
   }
-  console.log('[integration] Засеяны', SEED_CATEGORIES.length, 'категорий');
+} catch (e) {
+  console.error('[integration] Категории не засеяны:', e);
 }
 
 // Засеять траты
-const existingExpenses = await DL.getExpenses();
-if (existingExpenses.length === 0 && seedUser) {
-  const cats = await DL.getCategories();
-  const catMap = {};
-  cats.forEach(c => { catMap[c.name] = c.id; });
+try {
+  const existingExpenses = await DL.getExpenses();
+  if (existingExpenses.length === 0 && seedUser) {
+    const cats = await DL.getCategories();
+    const catMap = {};
+    cats.forEach(c => { catMap[c.name] = c.id; });
 
-  for (const [idx, exp] of SEED_EXPENSES.entries()) {
-    const catName = SEED_CATEGORIES[EXPENSE_CATEGORY_MAP[idx]]?.name;
-    await DL.addExpense({
-      ...exp,
-      categoryId: catMap[catName]?.id || cats[0]?.id,
-    });
+    for (const [idx, exp] of SEED_EXPENSES.entries()) {
+      const catName = SEED_CATEGORIES[EXPENSE_CATEGORY_MAP[idx]]?.name;
+      await DL.addExpense({
+        ...exp,
+        categoryId: catMap[catName]?.id || cats[0]?.id,
+      });
+    }
+    console.log('[integration] Засеяны', SEED_EXPENSES.length, 'тратов');
   }
-  console.log('[integration] Засеяны', SEED_EXPENSES.length, 'тратов');
+} catch (e) {
+  console.error('[integration] Траты не засеяны:', e);
 }
 
 // Сохранить текущего пользователя для app.js
