@@ -21,10 +21,9 @@
    ──────────────────────────────────────────────────────────────── */
 
 const SEED_USERS = [
-  { uid: 'user-1', email: 'maxim@trafy.app', displayName: 'Максим', color: '#6366f1', password: 'Максим123' },
-  { uid: 'user-2', email: 'margarita@trafy.app', displayName: 'Маргарита', color: '#ec4899', password: 'Маргарита123' },
+  { uid: 'user-1', email: 'maxim@trafy.app', displayName: 'Максим', color: '#6366f1' },
+  { uid: 'user-2', email: 'margarita@trafy.app', displayName: 'Маргарита', color: '#ec4899' },
 ];
-const SEED_PASSWORD = 'Максим123';
 
 const SEED_CATEGORIES = [
   { name: 'Еда',           color: '#f59e0b', icon: '🍽' },
@@ -97,10 +96,11 @@ if (needsReseed) {
 let seedUser = DL.getCurrentUser();
 if (!seedUser) {
   try {
-    seedUser = await DL.signIn('maxim@trafy.app', SEED_PASSWORD);
+    seedUser = await DL.signIn('maxim@trafy.app', undefined);
     console.log('[integration] Авторизован для сеяния:', seedUser.email);
   } catch (e) {
-    console.warn('[integration] Auto-sign-in failed:', e.message);
+    console.warn('[integration] Auto-sign-in failed, using seed user:', e.message);
+    seedUser = SEED_USERS[0];
   }
 }
 

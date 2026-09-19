@@ -26,8 +26,8 @@ const appState = {
 
 // Заглушка пользователей (этап 2 — без Firebase)
 const MOCK_USERS = [
-  { id: 'user-1', email: 'maxim@trafy.app', displayName: 'Максим', color: '#6366f1', password: 'Максим123' },
-  { id: 'user-2', email: 'margarita@trafy.app', displayName: 'Маргарита', color: '#ec4899', password: 'Маргарита123' },
+  { id: 'user-1', email: 'maxim@trafy.app', displayName: 'Максим', color: '#6366f1' },
+  { id: 'user-2', email: 'margarita@trafy.app', displayName: 'Маргарита', color: '#ec4899' },
 ];
 
 // Заглушка категорий
@@ -1509,18 +1509,14 @@ function selectUser(userId) {
   const user = MOCK_USERS.find(u => u.id === userId);
   if (!user) return;
 
-  const loginForm = $('#login-form');
-  const registerEl = $('#login-register');
-  if (loginForm) {
-    loginForm.classList.remove('hidden');
-    loginForm.dataset.userId = userId;
-    $('#input-email').value = user.email;
-    $('#input-password').value = '';
-  }
-  if (registerEl) registerEl.classList.add('hidden');
-
-  // Сфокусировать поле пароля
-  setTimeout(() => $('#input-password')?.focus(), 100);
+  // Мгновенный вход без пароля
+  appState.currentUser = user;
+  appState.syncStatus = navigator.onLine ? 'online' : 'offline';
+  saveState();
+  applyTheme();
+  navigateTo('#main');
+  renderAll();
+  showToast(`Добро пожаловать, ${user.displayName}! 👋`);
 }
 
 function handleLoginSubmit() {
@@ -2266,13 +2262,6 @@ function wireEvents() {
     }
   });
 
-  // ── Экран входа (привязка один раз при инициализации) ──
-  $('#btn-login-submit')?.addEventListener('click', handleLoginSubmit);
-  $('#btn-register')?.addEventListener('click', handleRegister);
-  $('#btn-forgot')?.addEventListener('click', () => {
-    showToast('Восстановление пароля через Email — в продакшене 🔐');
-  });
-
   // ── Онлайн/офлайн ──
   window.addEventListener('online',  () => {
     if (appState.syncEnabled) {
@@ -2337,7 +2326,6 @@ async function init() {
           email: email,
           displayName: data.displayName,
           color: '#6366f1',
-          password: data.password,
         }));
       }
     } catch (e) {
