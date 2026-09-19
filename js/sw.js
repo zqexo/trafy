@@ -9,8 +9,8 @@ const FILES = [
   'js/sw.js',
 ];
 
-const STATIC_CACHE = 'trafy-static-v1';
-const DYNAMIC_CACHE = 'trafy-dynamic-v1';
+const STATIC_CACHE = 'trafy-static-v2';
+const DYNAMIC_CACHE = 'trafy-dynamic-v2';
 
 const STATIC_URLS = [
   '/',

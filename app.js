@@ -26,10 +26,9 @@ const appState = {
 
 // Заглушка пользователей (этап 2 — без Firebase)
 const MOCK_USERS = [
-  { id: 'user-1', email: 'alex@trafy.app', displayName: 'Александр', color: '#6366f1' },
-  { id: 'user-2', email: 'mary@trafy.app', displayName: 'Мария',     color: '#ec4899' },
+  { id: 'user-1', email: 'maxim@trafy.app', displayName: 'Максим', color: '#6366f1', password: 'Максим123' },
+  { id: 'user-2', email: 'margarita@trafy.app', displayName: 'Маргарита', color: '#ec4899', password: 'Маргарита123' },
 ];
-const MOCK_PASSWORD = 'password123'; // для демо прототипа
 
 // Заглушка категорий
 const DEFAULT_CATEGORIES = [
@@ -1568,7 +1567,7 @@ function handleLoginSubmit() {
     return;
   }
 
-  if (pass !== MOCK_PASSWORD && email !== user.email) {
+  if (pass !== user.password) {
     errorEl.textContent = 'Неверный email или пароль';
     errorEl.classList.remove('hidden');
     return;

@@ -21,10 +21,10 @@
    ──────────────────────────────────────────────────────────────── */
 
 const SEED_USERS = [
-  { uid: 'user-1', email: 'alex@trafy.app', displayName: 'Александр', color: '#6366f1' },
-  { uid: 'user-2', email: 'mary@trafy.app', displayName: 'Мария',     color: '#ec4899' },
+  { uid: 'user-1', email: 'maxim@trafy.app', displayName: 'Максим', color: '#6366f1', password: 'Максим123' },
+  { uid: 'user-2', email: 'margarita@trafy.app', displayName: 'Маргарита', color: '#ec4899', password: 'Маргарита123' },
 ];
-const SEED_PASSWORD = 'password123';
+const SEED_PASSWORD = 'Максим123';
 
 const SEED_CATEGORIES = [
   { name: 'Еда',           color: '#f59e0b', icon: '🍽' },
@@ -70,23 +70,30 @@ await DL.initFirebase();
 
 // Засеять пользователей
 const storedUsers = JSON.parse(localStorage.getItem('et_mock_users') || '{}');
-if (Object.keys(storedUsers).length === 0) {
+const currentEmails = Object.keys(storedUsers).map(e => e.toLowerCase());
+const seedEmails = SEED_USERS.map(u => u.email.toLowerCase());
+const needsReseed = Object.keys(storedUsers).length === 0
+  || seedEmails.some(email => !currentEmails.includes(email))
+  || currentEmails.some(email => !seedEmails.includes(email));
+
+if (needsReseed) {
+  const freshUsers = {};
   SEED_USERS.forEach(u => {
-    storedUsers[u.email.toLowerCase()] = {
+    freshUsers[u.email.toLowerCase()] = {
       uid: u.uid,
-      password: SEED_PASSWORD,
+      password: u.password,
       displayName: u.displayName,
     };
   });
-  localStorage.setItem('et_mock_users', JSON.stringify(storedUsers));
-  console.log('[integration] Засеяны demo-пользователи');
+  localStorage.setItem('et_mock_users', JSON.stringify(freshUsers));
+  console.log('[integration] Пользователи обновлены');
 }
 
 // Авторизоваться для сеяния данных
 let seedUser = DL.getCurrentUser();
 if (!seedUser) {
   try {
-    seedUser = await DL.signIn('alex@trafy.app', SEED_PASSWORD);
+    seedUser = await DL.signIn('maxim@trafy.app', SEED_PASSWORD);
     console.log('[integration] Авторизован для сеяния:', seedUser.email);
   } catch (e) {
     console.warn('[integration] Auto-sign-in failed:', e.message);
